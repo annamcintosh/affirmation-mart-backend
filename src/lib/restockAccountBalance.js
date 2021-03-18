@@ -1,5 +1,4 @@
 import AWS from "aws-sdk";
-import commonMiddleware from "./commonMiddleware";
 import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
@@ -8,9 +7,9 @@ export async function restockAccountBalance(user) {
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
     Key: { id: user.id },
-    UpdateExpression: "set data = :data",
+    UpdateExpression: "set accountBalance = :accountBalance",
     ExpressionAttributeValues: {
-      ":data": 50,
+      ":accountBalance": 50,
     },
     ReturnValues: "ALL_NEW",
   };
