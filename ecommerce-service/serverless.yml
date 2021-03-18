@@ -13,9 +13,11 @@ provider:
   region: us-east-1
   environment:
     AFFIRMATION_TABLE_NAME: ${self:custom.AffirmationTable.name}
+    MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
   iamRoleStatements:
     - ${file(iam/AffirmationTableIAM.yml):AffirmationTableIAM}
-
+    - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
+    
 resources:
   Resources:
     AffirmationTable: ${file(resources/AffirmationTable.yml):AffirmationTable}
@@ -90,5 +92,8 @@ custom:
   AffirmationTable:
     name: !Ref AffirmationTable
     arn: !GetAtt AffirmationTable.Arn
+  MailQueue:
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
   bundle:
     linting: false
