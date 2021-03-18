@@ -1,0 +1,11 @@
+AffirmationTableIAM:
+  Effect: Allow
+  Action:
+    - dynamodb:PutItem
+    - dynamodb:Scan
+    - dynamodb:GetItem
+    - dynamodb:UpdateItem
+    - dynamodb:Query
+  Resource:
+    - ${self:custom.AffirmationTable.arn}
+    - !Join ['/', [ '${self:custom.AffirmationTable.arn}', 'index', 'sortAndData' ]]

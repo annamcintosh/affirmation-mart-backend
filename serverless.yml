@@ -1,0 +1,88 @@
+service:
+  name: affirmation-mart-backend
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  memorySize: 256
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+  environment:
+    AFFIRMATION_TABLE_NAME: ${self:custom.AffirmationTable.name}
+  iamRoleStatements:
+    - ${file(iam/AffirmationTableIAM.yml):AffirmationTableIAM}
+
+resources:
+  Resources:
+    AffirmationTable: ${file(resources/AffirmationTable.yml):AffirmationTable}
+
+functions:
+  createProduct:
+    handler: src/handlers/createProduct.handler
+    events:
+      - http:
+          method: POST
+          path: /product
+  getProducts:
+    handler: src/handlers/getProducts.handler
+    events:
+      - http:
+          method: GET
+          path: /products
+  getProduct:
+    handler: src/handlers/getProduct.handler
+    events:
+      - http:
+          method: GET
+          path: /product/{id}
+  updateProductStock:
+    handler: src/handlers/updateProductStock.handler
+    events:
+      - http:
+          method: PATCH
+          path: /product/{id}/update
+  getOrderById:
+    handler: src/handlers/getOrderById.handler
+    events:
+      - http:
+          method: GET
+          path: /order/{id}
+  createOrder:
+    handler: src/handlers/createOrder.handler
+    events:
+      - http:
+          method: POST
+          path: /order
+  addProductToOrder:
+    handler: src/handlers/addProductToOrder.handler
+    events:
+      - http:
+          method: PATCH
+          path: /order/add/{id}
+  removeProductFromOrder:
+    handler: src/handlers/removeProductFromOrder.handler
+    events:
+      - http:
+          method: PATCH
+          path: /order/remove/{id}
+  placeOrder:
+    handler: src/handlers/placeOrder.handler
+    events:
+      - http:
+          method: PATCH
+          path: /order/{id}/place
+  processDailyRefresh:
+    handler: src/handlers/processDailyRefresh.handler
+    # events:
+    #   - schedule: cron(0 0 * * ? *)
+
+custom:
+  AffirmationTable:
+    name: !Ref AffirmationTable
+    arn: !GetAtt AffirmationTable.Arn
+  bundle:
+    linting: false
