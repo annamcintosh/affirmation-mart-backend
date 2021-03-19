@@ -15,10 +15,9 @@ async function createProduct(event, context) {
   const product = {
     id: uuid(),
     sort: "PRODUCT",
-    data: "inStock",
+    data: seller,
     name,
     description,
-    seller,
     unitPrice,
     stockNumber: 25,
     createdAt: now.toISOString(),

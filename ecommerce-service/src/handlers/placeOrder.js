@@ -1,41 +1,58 @@
 import AWS from "aws-sdk";
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
-// import { getProductById } from "./getProduct";
+import { getOrderById } from "./getOrder";
+import { getUserById } from "./getUser";
+// import { getOrderTotal } from "../lib/getOrderTotal";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function placeOrder(event, context) {
   const { id } = event.pathParameters;
-  const { amount } = event.body;
-  const { email } = event.requestContext.authorizer;
+  // const { email } = event.requestContext.authorizer;
+  const order = await getOrderById(id);
+  const { total } = order;
+  // // const newTotal = await getOrderTotal(products);
 
-//   const order = await getOrderById(id);
+  // // Check to see if order has already been placed
+  // if (sort === "PROCESSING" || sort === "FULFILLED") {
+  //   throw new createError.Forbidden(
+  //     "Whoops! You cannot place an order twice. Please contact us if you need some help with this order!"
+  //   );
+  // }
+  const newTotal = total ? total + 5 : 30;
+  // const accountBalance = 50;
+
+  const user = await getUserById();
+  const { accountBalance } = user;
 
   // Order total and account balance validation
-  if (amount <= auction.highestBid.amount) {
+  if (newTotal > accountBalance) {
     throw new createError.Forbidden(
-      `You don't have quite enough funds in your account balance to order this right now. You need at least ${auction.highestBid.amount}`
+      "Uh oh! You don't have quite enough in your account balance to place this order right now. Try removing some items or increasing your account balance."
     );
   }
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
     Key: { id },
-    UpdateExpression:
-      "set highestBid.amount = :amount, highestBid.bidder = :bidder",
+    UpdateExpression: "set #total = :total, #sort = :sort",
+    ExpressionAttributeNames: {
+      "#total": "total",
+      "#sort": "sort",
+    },
     ExpressionAttributeValues: {
-      ":amount": amount,
-      ":bidder": email,
+      ":total": newTotal,
+      ":sort": "PROCESSING",
     },
     ReturnValues: "ALL_NEW",
   };
 
-  let updatedAuction;
+  let placedOrder;
 
   try {
     const result = await dynamodb.update(params).promise();
-    updatedAuction = result.Attributes;
+    placedOrder = result.Attributes;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
@@ -43,7 +60,7 @@ async function placeOrder(event, context) {
 
   return {
     statusCode: 200,
-    body: JSON.stringify(updatedAuction),
+    body: JSON.stringify(placedOrder),
   };
 }
 

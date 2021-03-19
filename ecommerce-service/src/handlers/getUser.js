@@ -4,8 +4,8 @@ import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-export async function getOrderById(id) {
-  let order;
+export async function getUserById(id) {
+  let user;
 
   try {
     const result = await dynamodb
@@ -15,27 +15,27 @@ export async function getOrderById(id) {
       })
       .promise();
 
-    order = result.Item;
+    user = result.Item;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
 
-  if (!order) {
-    throw new createError.NotFound(`Order with ID "${id}" not found.`);
+  if (!user) {
+    throw new createError.NotFound(`User with ID "${id}" not found.`);
   }
 
-  return order;
+  return user;
 }
 
-async function getOrder(event, context) {
+async function getUser(event, context) {
   const { id } = event.pathParameters;
-  const order = await getOrderById(id);
+  const user = await getUserById(id);
 
   return {
     statusCode: 200,
-    body: JSON.stringify(order),
+    body: JSON.stringify(user),
   };
 }
 
-export const handler = commonMiddleware(getOrder);
+export const handler = commonMiddleware(getUser);

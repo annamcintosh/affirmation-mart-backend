@@ -4,7 +4,7 @@ import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function getActiveProducts(event, context) {
+async function getProducts(event, context) {
   let products;
 
   const params = {
@@ -31,4 +31,4 @@ async function getActiveProducts(event, context) {
   };
 }
 
-export const handler = commonMiddleware(getActiveProducts);
+export const handler = commonMiddleware(getProducts);

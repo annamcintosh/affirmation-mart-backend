@@ -2,21 +2,29 @@ import { v4 as uuid } from "uuid";
 import AWS from "aws-sdk";
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
+import { getOrderByUserId } from "./getOrderByUserId";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function createOrder(event, context) {
   // const { email } = event.requestContext.authorizer;
+  const { userId, productId } = event.body;
   const now = new Date();
+
+  const existingShoppingOrder = await getOrderByUserId(userId);
+
+  if (existingShoppingOrder) {
+    return existingShoppingOrder;
+  }
 
   const order = {
     id: uuid(),
     sort: "SHOPPING",
-    data: "lovetosing94al@gmail.com",
+    data: userId,
     createdAt: now.toISOString(),
-    total: 0,
-    products: [],
-    recipient: "lovetosing94al@gmail.com"
+    total: null,
+    products: [productId],
+    recipient: userId
   };
 
   try {

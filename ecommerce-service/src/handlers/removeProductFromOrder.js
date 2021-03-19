@@ -1,7 +1,7 @@
 import AWS from "aws-sdk";
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
-import { getOrderById } from "./getOrderById";
+import { getOrderById } from "./getOrder";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 

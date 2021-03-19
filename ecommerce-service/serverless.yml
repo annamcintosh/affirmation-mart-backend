@@ -17,7 +17,7 @@ provider:
   iamRoleStatements:
     - ${file(iam/AffirmationTableIAM.yml):AffirmationTableIAM}
     - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
-    
+
 resources:
   Resources:
     AffirmationTable: ${file(resources/AffirmationTable.yml):AffirmationTable}
@@ -47,12 +47,18 @@ functions:
       - http:
           method: PATCH
           path: /product/{id}/update
-  getOrderById:
-    handler: src/handlers/getOrderById.handler
+  getOrder:
+    handler: src/handlers/getOrder.handler
     events:
       - http:
           method: GET
           path: /order/{id}
+  getOrderByUserId:
+    handler: src/handlers/getOrderByUserId.handler
+    events:
+      - http:
+          method: GET
+          path: /order/user/{id}
   createOrder:
     handler: src/handlers/createOrder.handler
     events:
@@ -76,7 +82,7 @@ functions:
     events:
       - http:
           method: PATCH
-          path: /order/{id}/place
+          path: /order/place/{id}
   # processDailyRefresh:
   #   handler: src/handlers/processDailyRefresh.handler
   # events:
@@ -87,6 +93,12 @@ functions:
       - http:
           method: POST
           path: /user
+  getUser:
+    handler: src/handlers/getUser.handler
+    events:
+      - http:
+          method: GET
+          path: /user/{id}
 
 custom:
   AffirmationTable:
