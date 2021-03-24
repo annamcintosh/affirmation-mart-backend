@@ -5,7 +5,7 @@ import createError from "http-errors";
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 export async function getUserById(id) {
-  let user;
+  // let user;
 
   try {
     const result = await dynamodb
@@ -15,21 +15,21 @@ export async function getUserById(id) {
       })
       .promise();
 
-    user = result.Item;
+    return result.Item;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
 
-  if (!user) {
-    throw new createError.NotFound(`User with ID "${id}" not found.`);
-  }
+  // if (!user) {
+  //   throw new createError.NotFound(`User with ID "${id}" not found.`);
+  // }
 
-  return user;
+  // return user;
 }
 
 async function getUser(event, context) {
-  const { id } = event.pathParameters;
+  const { id } = event.body;
   const user = await getUserById(id);
 
   return {

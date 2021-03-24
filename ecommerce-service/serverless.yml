@@ -23,6 +23,7 @@ resources:
     AffirmationTable: ${file(resources/AffirmationTable.yml):AffirmationTable}
 
 functions:
+#  PRODUCTS 
   createProduct:
     handler: src/handlers/createProduct.handler
     events:
@@ -47,6 +48,8 @@ functions:
       - http:
           method: PATCH
           path: /product/{id}/update
+
+  # ORDERS          
   getOrder:
     handler: src/handlers/getOrder.handler
     events:
@@ -83,23 +86,33 @@ functions:
       - http:
           method: PATCH
           path: /order/place/{id}
-  # processDailyRefresh:
-  #   handler: src/handlers/processDailyRefresh.handler
+
+  # UTILITY
+# processDailyRefresh:
+  # handler: src/handlers/processDailyRefresh.handler
   # events:
   #   - schedule: cron(0 0 * * ? *)
-  createUser:
+
+  # AUTHENTICATION        
+  autheticateUser:
     handler: src/handlers/createUser.handler
     events:
       - http:
           method: POST
-          path: /user
+          path: /auth      
   getUser:
     handler: src/handlers/getUser.handler
     events:
       - http:
-          method: GET
-          path: /user/{id}
-
+          method: POST
+          path: /auth/user
+  registerUser:
+    handler: src/handlers/registerUser.handler
+    events:
+      - http:
+          method: POST
+          path: /users   
+          
 custom:
   AffirmationTable:
     name: !Ref AffirmationTable
