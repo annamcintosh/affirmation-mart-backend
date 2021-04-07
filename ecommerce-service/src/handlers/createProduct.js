@@ -8,7 +8,7 @@ import createProductSchema from "../lib/schemas/createProductSchema";
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function createProduct(event, context) {
-  const { name, unitPrice, description, seller } = event.body;
+  const { name, unitPrice, description, image, seller } = event.body;
   // const { email } = event.requestContext.authorizer;
   const now = new Date();
 
@@ -18,6 +18,7 @@ async function createProduct(event, context) {
     data: seller,
     name,
     description,
+    image,
     unitPrice,
     stockNumber: 25,
     createdAt: now.toISOString(),
@@ -37,6 +38,10 @@ async function createProduct(event, context) {
 
   return {
     statusCode: 201,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
     body: JSON.stringify(product),
   };
 }

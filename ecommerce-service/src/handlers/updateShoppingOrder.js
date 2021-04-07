@@ -4,22 +4,25 @@ import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function getProducts(event, context) {
-  let products;
+async function updateShoppingOrder(event, context) {
+  const { id } = event.pathParameters;
+  const { newOrder } = event.body;
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
-    IndexName: "sortAndData",
-    KeyConditionExpression: "sort = :sort",
+    Key: { id },
+    UpdateExpression: "set shoppingOrder = :shoppingOrder",
     ExpressionAttributeValues: {
-      ":sort": "PRODUCT",
+      ":shoppingOrder": newOrder,
     },
+    ReturnValues: "ALL_NEW",
   };
 
-  try {
-    const result = await dynamodb.query(params).promise();
+  let updatedUser;
 
-    products = result.Items;
+  try {
+    const result = await dynamodb.update(params).promise();
+    updatedUser = result.Attributes;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
@@ -31,8 +34,8 @@ async function getProducts(event, context) {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true,
     },
-    body: JSON.stringify(products),
+    body: JSON.stringify(updatedUser),
   };
 }
 
-export const handler = commonMiddleware(getProducts);
+export const handler = commonMiddleware(updateShoppingOrder);

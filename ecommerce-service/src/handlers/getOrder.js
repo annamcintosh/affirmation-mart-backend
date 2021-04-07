@@ -28,27 +28,34 @@ export async function getOrderById(id) {
   return order;
 }
 
-export async function getShoppingOrderByUser(userId) {
-  const params = {
-    TableName: process.env.AFFIRMATION_TABLE_NAME,
-    IndexName: "sortAndData",
-    KeyConditionExpression: "#sort = :sort AND #data = :data",
-    ExpressionAttributeNames: {
-      "#sort": "sort",
-      "#data": "data",
-    },
-    ExpressionAttributeValues: {
-      ":sort": "SHOPPING",
-      ":data": userId,
-    },
-  };
-  try {
-    const result = await dynamodb.query(params).promise();
-    return result.Item;
-  } catch (error) {
-    return null;
-  }
-}
+// export async function getShoppingOrderByUser(userId) {
+//   const params = {
+//     TableName: process.env.AFFIRMATION_TABLE_NAME,
+//     IndexName: "sortAndData",
+//     KeyConditionExpression: "#sort = :sort AND #data = :data",
+//     ExpressionAttributeNames: {
+//       "#sort": "sort",
+//       "#data": "data",
+//     },
+//     ExpressionAttributeValues: {
+//       ":sort": "SHOPPING",
+//       ":data": userId,
+//     },
+//   };
+//   try {
+//     const result = await dynamodb.query(params).promise();
+//     return {
+//       statusCode: 200,
+//       headers: {
+//         "Access-Control-Allow-Origin": "*",
+//         "Access-Control-Allow-Credentials": true,
+//       },
+//       body: JSON.stringify(result.Item),
+//     };
+//   } catch (error) {
+//     return null;
+//   }
+// }
 
 async function getOrder(event, context) {
   const { id } = event.pathParameters;
@@ -56,6 +63,10 @@ async function getOrder(event, context) {
 
   return {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
     body: JSON.stringify(order),
   };
 }

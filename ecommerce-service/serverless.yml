@@ -30,24 +30,28 @@ functions:
       - http:
           method: POST
           path: /product
+          cors: true
   getProducts:
     handler: src/handlers/getProducts.handler
     events:
       - http:
           method: GET
           path: /products
+          cors: true
   getProduct:
     handler: src/handlers/getProduct.handler
     events:
       - http:
           method: GET
           path: /product/{id}
+          cors: true
   updateProductStock:
     handler: src/handlers/updateProductStock.handler
     events:
       - http:
           method: PATCH
           path: /product/{id}/update
+          cors: true
 
   # ORDERS          
   getOrder:
@@ -56,36 +60,56 @@ functions:
       - http:
           method: GET
           path: /order/{id}
-  getOrderByUserId:
-    handler: src/handlers/getOrderByUserId.handler
+          cors: true
+  getShoppingOrderByUserId:
+    handler: src/handlers/getShoppingOrderByUserId.handler
     events:
       - http:
           method: GET
           path: /order/user/{id}
+          cors: true
   createOrder:
     handler: src/handlers/createOrder.handler
     events:
       - http:
           method: POST
           path: /order
+          cors: true
   addProductToOrder:
     handler: src/handlers/addProductToOrder.handler
     events:
       - http:
           method: PATCH
           path: /order/add/{id}
+          cors: true
+  updateOrderStatus:
+    handler: src/handlers/updateOrderStatus.handler
+    events:
+      - http:
+          method: PATCH
+          path: /order/status/{id}
+          cors: true
+  updateOrderTotal:
+    handler: src/handlers/updateOrderTotal.handler
+    events:
+      - http:
+          method: PATCH
+          path: /order/total/{id}
+          cors: true
   removeProductFromOrder:
     handler: src/handlers/removeProductFromOrder.handler
     events:
       - http:
           method: PATCH
           path: /order/remove/{id}
+          cors: true
   placeOrder:
     handler: src/handlers/placeOrder.handler
     events:
       - http:
           method: PATCH
           path: /order/place/{id}
+          cors: true
 
   # UTILITY
 # processDailyRefresh:
@@ -93,26 +117,35 @@ functions:
   # events:
   #   - schedule: cron(0 0 * * ? *)
 
-  # AUTHENTICATION        
-  autheticateUser:
-    handler: src/handlers/createUser.handler
+  # USERS        
+  signInUser:
+    handler: src/handlers/signInUser.handler
     events:
       - http:
           method: POST
-          path: /auth      
+          path: /auth
+          cors: true      
   getUser:
     handler: src/handlers/getUser.handler
     events:
       - http:
           method: POST
           path: /auth/user
-  registerUser:
-    handler: src/handlers/registerUser.handler
+          cors: true
+  signUpUser:
+    handler: src/handlers/signUpUser.handler
     events:
       - http:
           method: POST
-          path: /users   
-          
+          path: /users
+          cors: true   
+  updateShoppingOrder:
+    handler: src/handlers/updateShoppingOrder.handler
+    events:
+      - http:
+          method: PATCH
+          path: /user/order/{id}
+          cors: true        
 custom:
   AffirmationTable:
     name: !Ref AffirmationTable

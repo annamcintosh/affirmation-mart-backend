@@ -7,7 +7,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function addProductToOrder(event, context) {
   const { id } = event.pathParameters;
-  const { productId } = event.body;
+  const { productId, unitPrice, name } = event.body;
   const order = await getOrderById(id);
   const { products, sort } = order;
 
@@ -18,12 +18,21 @@ async function addProductToOrder(event, context) {
     );
   }
 
+  // // Validation to ensure this item does not already exist in the order.
+  // for (let i = 0; i > products.length; i++) {
+  //   if (products[i].productId === id) {
+  //     throw new createError.Forbidden(
+  //       "Whoops! You cannot add more than one of each item."
+  //     );
+  //   }
+  // }
+
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
     Key: { id },
     UpdateExpression: "set products = :productId",
     ExpressionAttributeValues: {
-      ":productId": [...products, productId],
+      ":productId": [...products, { productId, unitPrice, name }],
     },
     ReturnValues: "ALL_NEW",
   };
@@ -40,6 +49,10 @@ async function addProductToOrder(event, context) {
 
   return {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
     body: JSON.stringify(updatedOrder),
   };
 }

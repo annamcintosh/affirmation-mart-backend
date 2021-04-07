@@ -1,31 +1,20 @@
 import AWS from "aws-sdk";
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
-import { getOrderById } from "./getOrder";
+// import { getOrderById } from "./getOrder";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function removeProductFromOrder(event, context) {
+async function updateOrderStatus(event, context) {
   const { id } = event.pathParameters;
-  const { productId } = event.body;
-
-  const order = await getOrderById(id);
-  const { products, sort } = order;
-  const updatedProducts = products.filter((product) => product.productId !== productId);
-
-  // Validation to ensure the order has not yet been placed.
-  if (sort !== "SHOPPING") {
-    throw new createError.Forbidden(
-      "Whoops! You cannot remove items from an order after it has been placed. Please contact us if you need some help with this order!"
-    );
-  }
+  const { newStatus } = event.body;
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
     Key: { id },
-    UpdateExpression: "set products = :productId",
+    UpdateExpression: "set sort = :sort",
     ExpressionAttributeValues: {
-      ":productId": updatedProducts,
+      ":sort": newStatus,
     },
     ReturnValues: "ALL_NEW",
   };
@@ -50,4 +39,4 @@ async function removeProductFromOrder(event, context) {
   };
 }
 
-export const handler = commonMiddleware(removeProductFromOrder);
+export const handler = commonMiddleware(updateOrderStatus);

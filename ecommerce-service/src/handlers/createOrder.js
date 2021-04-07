@@ -2,20 +2,12 @@ import { v4 as uuid } from "uuid";
 import AWS from "aws-sdk";
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
-import { getOrderByUserId } from "./getOrderByUserId";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function createOrder(event, context) {
-  // const { email } = event.requestContext.authorizer;
-  const { userId, productId } = event.body;
+  const { userId } = event.body;
   const now = new Date();
-
-  const existingShoppingOrder = await getOrderByUserId(userId);
-
-  if (existingShoppingOrder) {
-    return existingShoppingOrder;
-  }
 
   const order = {
     id: uuid(),
@@ -23,8 +15,8 @@ async function createOrder(event, context) {
     data: userId,
     createdAt: now.toISOString(),
     total: null,
-    products: [productId],
-    recipient: userId
+    products: [],
+    recipient: userId,
   };
 
   try {
@@ -41,6 +33,10 @@ async function createOrder(event, context) {
 
   return {
     statusCode: 201,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
     body: JSON.stringify(order),
   };
 }

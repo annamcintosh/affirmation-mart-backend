@@ -4,7 +4,8 @@ import commonMiddleware from "../lib/commonMiddleware";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-export async function getShoppingOrderByUser(userId) {
+export async function getShoppingOrderByUser(event, context) {
+  const { id } = event.pathParameters;
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
@@ -16,28 +17,29 @@ export async function getShoppingOrderByUser(userId) {
     },
     ExpressionAttributeValues: {
       ":sort": "SHOPPING",
-      ":data": userId,
+      ":data": id,
     },
   };
 
+  let order;
+
   try {
     const result = await dynamodb.query(params).promise();
-    return result.Items[0];
+    order = result.Items[0];
   } catch (error) {
     return {
       message: "This is an error",
     };
   }
-}
-
-async function getOrderByUserId(event, context) {
-  const { id } = event.pathParameters;
-  const order = await getShoppingOrderByUser(id);
 
   return {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
     body: JSON.stringify(order),
   };
 }
 
-export const handler = commonMiddleware(getOrderByUserId);
+export const handler = commonMiddleware(getShoppingOrderByUser);

@@ -5,15 +5,15 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv").config();
 
-async function authenticateUser(event, context) {
+async function signInUser(event, context) {
   const { email, password } = event.body;
 
   if (!email || !password) {
     throw new createError.Forbidden("Please enter all fields.");
   }
 
-  const existingUser = await getUserById(email);
-  if (!existingUser) {
+  const user = await getUserById(email);
+  if (!user) {
     throw new createError.NotFound("User with this email does not exist.");
   }
 
@@ -27,10 +27,9 @@ async function authenticateUser(event, context) {
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
-        res.json({
+        return ({
           token,
           user: {
-            id: user.id,
             name: user.name,
             email: user.email,
           },
@@ -40,4 +39,4 @@ async function authenticateUser(event, context) {
   });
 }
 
-export const handler = commonMiddleware(authenticateUser);
+export const handler = commonMiddleware(signInUser);
