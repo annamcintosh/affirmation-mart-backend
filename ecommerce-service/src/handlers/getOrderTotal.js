@@ -1,4 +1,4 @@
-import { getProductById } from "../handlers/getProduct";
+import { getProductById } from "./getProduct";
 
 export async function getOrderTotal(products) {
   let newTotal = 0;

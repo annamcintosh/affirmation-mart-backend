@@ -7,11 +7,13 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function removeProductFromOrder(event, context) {
   const { id } = event.pathParameters;
-  const { productId } = event.body;
+  const { productId, unitPrice } = event.body;
 
   const order = await getOrderById(id);
-  const { products, sort } = order;
-  const updatedProducts = products.filter((product) => product.productId !== productId);
+  const { products, sort, total } = order;
+  const updatedProducts = products.filter(
+    (product) => product.productId !== productId
+  );
 
   // Validation to ensure the order has not yet been placed.
   if (sort !== "SHOPPING") {
@@ -20,16 +22,22 @@ async function removeProductFromOrder(event, context) {
     );
   }
 
+  const newTotal = parseInt(total) - parseInt(unitPrice);
+
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
     Key: { id },
-    UpdateExpression: "set products = :productId",
+    UpdateExpression: "set #products = :products, #total = :total",
+    ExpressionAttributeNames: {
+      "#products": "products",
+      "#total": "total",
+    },
     ExpressionAttributeValues: {
-      ":productId": updatedProducts,
+      ":products": updatedProducts,
+      ":total": newTotal,
     },
     ReturnValues: "ALL_NEW",
   };
-
   let updatedOrder;
 
   try {

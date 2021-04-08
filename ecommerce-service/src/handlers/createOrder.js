@@ -5,16 +5,16 @@ import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function createOrder(event, context) {
-  const { userId } = event.body;
+export async function createOrderWithId(userId) {
   const now = new Date();
+  // let order;
 
-  const order = {
+  const orderParams = {
     id: uuid(),
     sort: "SHOPPING",
     data: userId,
     createdAt: now.toISOString(),
-    total: null,
+    total: 0,
     products: [],
     recipient: userId,
   };
@@ -23,13 +23,22 @@ async function createOrder(event, context) {
     await dynamodb
       .put({
         TableName: process.env.AFFIRMATION_TABLE_NAME,
-        Item: order,
+        Item: orderParams,
       })
       .promise();
+
+    return orderParams;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
+
+  // return order;
+}
+
+async function createOrder(event, context) {
+  const { userId } = event.body;
+  const order = await createOrderWithId(userId);
 
   return {
     statusCode: 201,

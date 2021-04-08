@@ -15,7 +15,8 @@ async function createProduct(event, context) {
   const product = {
     id: uuid(),
     sort: "PRODUCT",
-    data: seller,
+    data: "inStock",
+    seller,
     name,
     description,
     image,

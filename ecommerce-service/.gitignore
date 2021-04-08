@@ -9,3 +9,5 @@ jspm_packages
 .webpack
 
 .env
+
+secrets.json

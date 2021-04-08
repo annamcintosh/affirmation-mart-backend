@@ -9,10 +9,10 @@ export async function addUser(newUser) {
   };
   try {
     await dynamodb.put(params).promise();
-    const { id, name} = newUser;
-    return id, name;
+    return newUser;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
+  // return newUser;
 }

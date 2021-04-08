@@ -19,10 +19,10 @@ async function signInUser(event, context) {
 
   //Validate password
   bcrypt.compare(password, user.password).then((isMatch) => {
-    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+    if (!isMatch) throw new createError.Forbidden("Invalid credentials");
 
     jwt.sign(
-      { id: user.email },
+      { id: user.id },
       process.env.JWT_SECRET,
       { expiresIn: 3600 },
       (err, token) => {
@@ -31,7 +31,7 @@ async function signInUser(event, context) {
           token,
           user: {
             name: user.name,
-            email: user.email,
+            id: user.id,
           },
         });
       }

@@ -2,27 +2,32 @@ const AWS = require("aws-sdk");
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
-// import { addUser } from "./addUser";
 import { getUserById } from "./getUser";
-import { createOrder } from "./createOrder";
-// const bcrypt = require("bcryptjs");
-// const jwt = require("jsonwebtoken");
-// const dotenv = require("dotenv").config();
+import { createOrderWithId } from "./createOrder";
+// import { hashPass } from "../lib/bcryptService";
+import { addUser } from "./addUser";
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv").config();
 
 async function signUpUser(event, context) {
   const { email, name, password } = event.body;
   const now = new Date();
 
+  // validate that all fields were filled in
   if (!name || !email || !password) {
     throw new createError.Forbidden("Please enter all fields.");
   }
 
+  // check to see if user already exists
   const existingUser = await getUserById(email);
   if (existingUser) {
     throw new createError.Forbidden(
       "User with this email already exists. Please log in, use another email to register, or contact us for more help."
     );
   }
+
+  const newOrder = await createOrderWithId(email);
 
   const newUser = {
     id: email,
@@ -31,52 +36,34 @@ async function signUpUser(event, context) {
     password,
     accountBalance: 50,
     createdAt: now.toISOString(),
-    shoppingOrder: "",
+    shoppingOrder: newOrder.id ? newOrder.id : "",
   };
 
-  const params = {
-    TableName: process.env.AFFIRMATION_TABLE_NAME,
-    Item: newUser,
+  bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(newUser.password, salt, (err, hash) => {
+      if (err) throw err;
+      newUser.password = hash;
+      return addUser(newUser);
+    });
+  });
+
+  const token = jwt.sign(newUser.id, process.env.JWT_SECRET, {
+    expiresIn: 86400,
+  });
+
+  const newUserResponse = {
+    id: newUser.id,
+    name: newUser.data,
   };
-  try {
-    await dynamodb.put(params).promise();
-    // const { id, name } = newUser;
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Credentials": true,
-      },
-      body: JSON.stringify(newUser),
-    };
-  } catch (error) {
-    console.error(error);
-    throw new createError.InternalServerError(error);
-  }
-  // bcrypt.genSalt(10, (err, salt) => {
-  //   bcrypt.hash(newUser.password, salt, (err, hash) => {
-  //     if (err) throw err;
-  //     newUser.password = hash;
-  //     return addUser(newUser).then((user) => {
-  //       jwt.sign(
-  //         { id: user.id },
-  //         process.env.JWT_SECRET,
-  //         { expiresIn: 3600 },
-  //         (err, token) => {
-  //           if (err) throw err;
-  //           res.json({
-  //             token,
-  //             user: {
-  //               id: user.id,
-  //               name: user.name,
-  //               accountBalance: user.accountBalance,
-  //             },
-  //           });
-  //         }
-  //       );
-  //     });
-  //   });
-  // });
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
+    body: JSON.stringify(newUserResponse),
+  };
 }
 
 export const handler = commonMiddleware(signUpUser);

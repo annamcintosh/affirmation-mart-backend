@@ -7,9 +7,10 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function addProductToOrder(event, context) {
   const { id } = event.pathParameters;
-  const { productId, unitPrice, name } = event.body;
+  const { unitPrice, name } = event.body;
+  const productId = event.body.id;
   const order = await getOrderById(id);
-  const { products, sort } = order;
+  const { products, sort, total } = order;
 
   // Validation to ensure an order has not yet been placed.
   if (sort !== "SHOPPING") {
@@ -18,6 +19,7 @@ async function addProductToOrder(event, context) {
     );
   }
 
+  const newTotal = parseInt(total) + parseInt(unitPrice);
   // // Validation to ensure this item does not already exist in the order.
   // for (let i = 0; i > products.length; i++) {
   //   if (products[i].productId === id) {
@@ -30,9 +32,14 @@ async function addProductToOrder(event, context) {
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
     Key: { id },
-    UpdateExpression: "set products = :productId",
+    UpdateExpression: "set #products = :products, #total = :total",
+    ExpressionAttributeNames: {
+      "#products": "products",
+      "#total": "total",
+    },
     ExpressionAttributeValues: {
-      ":productId": [...products, { productId, unitPrice, name }],
+      ":products": [...products, { productId, unitPrice, name }],
+      ":total": newTotal,
     },
     ReturnValues: "ALL_NEW",
   };

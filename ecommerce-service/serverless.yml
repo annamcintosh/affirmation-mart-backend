@@ -14,6 +14,7 @@ provider:
   environment:
     AFFIRMATION_TABLE_NAME: ${self:custom.AffirmationTable.name}
     MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
+    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
   iamRoleStatements:
     - ${file(iam/AffirmationTableIAM.yml):AffirmationTableIAM}
     - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
@@ -112,6 +113,8 @@ functions:
           cors: true
 
   # UTILITY
+  authorizerFunction:
+    handler: src/handlers/authorizerFunction.handler
 # processDailyRefresh:
   # handler: src/handlers/processDailyRefresh.handler
   # events:
@@ -155,3 +158,4 @@ custom:
     url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
   bundle:
     linting: false
+  secrets: ${file(secrets.json)}
