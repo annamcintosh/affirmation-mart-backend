@@ -88,7 +88,7 @@ functions:
     events:
       - http:
           method: PATCH
-          path: /order/status/{id}
+          path: /order/status
           cors: true
   updateOrderTotal:
     handler: src/handlers/updateOrderTotal.handler
@@ -147,7 +147,7 @@ functions:
     events:
       - http:
           method: PATCH
-          path: /user/order/{id}
+          path: /user/order
           cors: true        
 custom:
   AffirmationTable:

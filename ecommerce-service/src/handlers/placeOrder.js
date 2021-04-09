@@ -3,56 +3,58 @@ import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
 import { getOrderById } from "./getOrder";
 import { getUserById } from "./getUser";
-// import { getOrderTotal } from "../lib/getOrderTotal";
+import { updateOrderStatusById } from "./updateOrderStatus";
+import { createOrderWithId } from "./createOrder";
+import { updateShoppingOrderWithId } from "./updateShoppingOrder";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function placeOrder(event, context) {
   const { id } = event.pathParameters;
-  // const { email } = event.requestContext.authorizer;
+  const { userId } = event.body;
+
   const order = await getOrderById(id);
-  const { total } = order;
-  // // const newTotal = await getOrderTotal(products);
+  const { total, sort } = order;
 
-  // // Check to see if order has already been placed
-  // if (sort === "PROCESSING" || sort === "FULFILLED") {
-  //   throw new createError.Forbidden(
-  //     "Whoops! You cannot place an order twice. Please contact us if you need some help with this order!"
-  //   );
-  // }
-  const newTotal = total ? total + 5 : 30;
-  // const accountBalance = 50;
+  // Check to see if the order exists.
+  if (!order) {
+    throw new createError.NotFound(`Order with ID "${id}" not found.`);
+  }
 
-  const user = await getUserById();
-  const { accountBalance } = user;
+  // Check to see if order has already been placed
+  if (sort === "PROCESSING" || sort === "FULFILLED") {
+    throw new createError.Forbidden(
+      "Whoops! You cannot place an order twice. Please contact us if you need some help with this order!"
+    );
+  }
 
   // Order total and account balance validation
-  if (newTotal > accountBalance) {
+  if (total > 50) {
     throw new createError.Forbidden(
       "Uh oh! You don't have quite enough in your account balance to place this order right now. Try removing some items or increasing your account balance."
     );
   }
 
-  const params = {
-    TableName: process.env.AFFIRMATION_TABLE_NAME,
-    Key: { id },
-    UpdateExpression: "set #total = :total, #sort = :sort",
-    ExpressionAttributeNames: {
-      "#total": "total",
-      "#sort": "sort",
-    },
-    ExpressionAttributeValues: {
-      ":total": newTotal,
-      ":sort": "PROCESSING",
-    },
-    ReturnValues: "ALL_NEW",
-  };
-
-  let placedOrder;
+  // update order status
+  // initialize SQS for confirmation
+  // create new order
+  // update order in user
+  // initialize SQS for order
 
   try {
-    const result = await dynamodb.update(params).promise();
-    placedOrder = result.Attributes;
+    const newStatusPending = "PENDING";
+    const newStatusFulfilled = "FULFILLED";
+    const newOrderStatusPending = await updateOrderStatusById(
+      newStatusPending,
+      id
+    );
+    const newOrder = await createOrderWithId(userId);
+    const newOrderId = newOrder.id;
+    const updateUserOrder = await updateShoppingOrderWithId(newOrderId, userId);
+    const newOrderStatusFulfilled = await updateOrderStatusById(
+      newStatusFulfilled,
+      id
+    );
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
@@ -64,7 +66,7 @@ async function placeOrder(event, context) {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true,
     },
-    body: JSON.stringify(placedOrder),
+    body: JSON.stringify(updateUserOrder)
   };
 }
 

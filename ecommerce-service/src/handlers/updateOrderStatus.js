@@ -5,9 +5,8 @@ import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function updateOrderStatus(event, context) {
-  const { id } = event.pathParameters;
-  const { newStatus } = event.body;
+export async function updateOrderStatusById(newStatus, id) {
+  let updatedOrder;
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
@@ -19,8 +18,6 @@ async function updateOrderStatus(event, context) {
     ReturnValues: "ALL_NEW",
   };
 
-  let updatedOrder;
-
   try {
     const result = await dynamodb.update(params).promise();
     updatedOrder = result.Attributes;
@@ -28,7 +25,12 @@ async function updateOrderStatus(event, context) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
+  return updatedOrder;
+}
 
+async function updateOrderStatus(event, context) {
+  const { newStatus, id } = event.body;
+  const updatedOrder = await updateOrderStatusById(newStatus, id);
   return {
     statusCode: 200,
     headers: {

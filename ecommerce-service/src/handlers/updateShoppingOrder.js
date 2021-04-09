@@ -4,21 +4,18 @@ import createError from "http-errors";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function updateShoppingOrder(event, context) {
-  const { id } = event.pathParameters;
-  const { newOrder } = event.body;
+export async function updateShoppingOrderWithId(newOrderId, userId) {
+  let updatedUser;
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
-    Key: { id },
+    Key: { userId },
     UpdateExpression: "set shoppingOrder = :shoppingOrder",
     ExpressionAttributeValues: {
-      ":shoppingOrder": newOrder,
+      ":shoppingOrder": newOrderId,
     },
     ReturnValues: "ALL_NEW",
   };
-
-  let updatedUser;
 
   try {
     const result = await dynamodb.update(params).promise();
@@ -27,6 +24,13 @@ async function updateShoppingOrder(event, context) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
+
+  return updatedUser;
+}
+
+async function updateShoppingOrder(event, context) {
+  const { newOrderId, userId } = event.body;
+  const updatedUser = await updateShoppingOrderWithId(newOrderId, userId);
 
   return {
     statusCode: 200,

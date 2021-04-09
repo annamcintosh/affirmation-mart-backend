@@ -47,13 +47,14 @@ async function signUpUser(event, context) {
     });
   });
 
-  const token = jwt.sign(newUser.id, process.env.JWT_SECRET, {
-    expiresIn: 86400,
-  });
+  // const token = jwt.sign(newUser.id, process.env.JWT_SECRET, {
+  //   expiresIn: 86400,
+  // });
 
   const newUserResponse = {
     id: newUser.id,
     name: newUser.data,
+    shoppingOrder: newUser.shoppingOrder,
   };
 
   return {

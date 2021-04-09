@@ -20,14 +20,6 @@ async function addProductToOrder(event, context) {
   }
 
   const newTotal = parseInt(total) + parseInt(unitPrice);
-  // // Validation to ensure this item does not already exist in the order.
-  // for (let i = 0; i > products.length; i++) {
-  //   if (products[i].productId === id) {
-  //     throw new createError.Forbidden(
-  //       "Whoops! You cannot add more than one of each item."
-  //     );
-  //   }
-  // }
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
