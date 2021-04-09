@@ -6,7 +6,7 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 export async function getUserById(id) {
   // let user;
-
+  
   try {
     const result = await dynamodb
       .get({

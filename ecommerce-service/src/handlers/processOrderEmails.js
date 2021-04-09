@@ -1,7 +1,12 @@
-export async function processOrderEmails(userId, id, order, user) {
+import { getUserById } from "./getUser";
+
+export async function processOrderEmails(userId, order) {
   const sqs = new AWS.SQS();
   const now = new Date();
   const currently = now.toISOString();
+
+  const id = { id: userId };
+  const user = await getUserById(id);
 
   const notifySeller = sqs
     .sendMessage({
@@ -9,7 +14,7 @@ export async function processOrderEmails(userId, id, order, user) {
       MessageBody: JSON.stringify({
         subject: " Order Completed",
         recipient: "affirmation.mart@gmail.com",
-        body: {order, user, currently},
+        body: { order, user, currently },
         template: "AFFIRMATION-ORDER-SELLER-COMPLETED",
       }),
     })
@@ -21,7 +26,7 @@ export async function processOrderEmails(userId, id, order, user) {
       MessageBody: JSON.stringify({
         subject: "Your affirmations have arrived!",
         recipient: userId,
-        body: {order, user},
+        body: { order, user },
         template: "AFFIRMATION-ORDER-COMPLETED",
       }),
     })

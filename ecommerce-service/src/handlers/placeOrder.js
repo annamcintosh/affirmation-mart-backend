@@ -2,10 +2,12 @@ import AWS from "aws-sdk";
 import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
 import { getOrderById } from "./getOrder";
-import { getUserById } from "./getUser";
+// import { getUserById } from "./getUser";
 import { updateOrderStatusById } from "./updateOrderStatus";
 import { createOrderWithId } from "./createOrder";
 import { updateShoppingOrderWithId } from "./updateShoppingOrder";
+import { processOrderEmails } from "./processOrderEmails";
+import { processConfirmationEmails } from "./processConfirmationEmails";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
@@ -14,7 +16,7 @@ async function placeOrder(event, context) {
   const { userId } = event.body;
 
   const order = await getOrderById(id);
-  const { total, sort, products } = order;
+  const { total, sort } = order;
 
   // Check to see if the order exists.
   if (!order) {
@@ -35,11 +37,6 @@ async function placeOrder(event, context) {
     );
   }
 
-  // update order status
-  // initialize SQS for confirmation
-  // create new order
-  // update order in user
-  // initialize SQS for order
   let updateUserOrder;
 
   try {
@@ -49,9 +46,11 @@ async function placeOrder(event, context) {
       newStatusPending,
       id
     );
+    const confirmedEmail = await processConfirmationEmails(userId, order);
     const newOrder = await createOrderWithId(userId);
     const newOrderId = newOrder.id;
     updateUserOrder = await updateShoppingOrderWithId(newOrderId, userId);
+    const completedEmail = await processOrderEmails(userId, order);
     const newOrderStatusFulfilled = await updateOrderStatusById(
       newStatusFulfilled,
       id
