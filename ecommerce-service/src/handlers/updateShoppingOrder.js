@@ -6,11 +6,15 @@ const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 export async function updateShoppingOrderWithId(newOrderId, userId) {
   let updatedUser;
+  const id = { id: userId };
 
   const params = {
     TableName: process.env.AFFIRMATION_TABLE_NAME,
-    Key: { userId },
-    UpdateExpression: "set shoppingOrder = :shoppingOrder",
+    Key: id,
+    UpdateExpression: "set #shoppingOrder = :shoppingOrder",
+    ExpressionAttributeNames: {
+      "#shoppingOrder": "shoppingOrder",
+    },
     ExpressionAttributeValues: {
       ":shoppingOrder": newOrderId,
     },

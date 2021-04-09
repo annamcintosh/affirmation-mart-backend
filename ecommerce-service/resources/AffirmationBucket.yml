@@ -1,0 +1,9 @@
+AffirmationBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:custom.AffirmationBucket.name}
+    LifecycleConfiguration:
+      Rules:
+        - Id: ExpirePictures
+          Status: Enabled
+          ExpirationInDays: 365

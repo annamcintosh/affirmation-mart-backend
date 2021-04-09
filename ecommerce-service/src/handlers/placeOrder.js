@@ -14,7 +14,7 @@ async function placeOrder(event, context) {
   const { userId } = event.body;
 
   const order = await getOrderById(id);
-  const { total, sort } = order;
+  const { total, sort, products } = order;
 
   // Check to see if the order exists.
   if (!order) {
@@ -40,6 +40,7 @@ async function placeOrder(event, context) {
   // create new order
   // update order in user
   // initialize SQS for order
+  let updateUserOrder;
 
   try {
     const newStatusPending = "PENDING";
@@ -50,7 +51,7 @@ async function placeOrder(event, context) {
     );
     const newOrder = await createOrderWithId(userId);
     const newOrderId = newOrder.id;
-    const updateUserOrder = await updateShoppingOrderWithId(newOrderId, userId);
+    updateUserOrder = await updateShoppingOrderWithId(newOrderId, userId);
     const newOrderStatusFulfilled = await updateOrderStatusById(
       newStatusFulfilled,
       id
@@ -66,7 +67,7 @@ async function placeOrder(event, context) {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true,
     },
-    body: JSON.stringify(updateUserOrder)
+    body: JSON.stringify(updateUserOrder),
   };
 }
 

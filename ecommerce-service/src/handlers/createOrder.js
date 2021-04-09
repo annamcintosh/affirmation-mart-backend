@@ -26,14 +26,12 @@ export async function createOrderWithId(userId) {
         Item: orderParams,
       })
       .promise();
-
-    return orderParams;
   } catch (error) {
     console.error(error);
     throw new createError.InternalServerError(error);
   }
 
-  // return order;
+  return orderParams;
 }
 
 async function createOrder(event, context) {

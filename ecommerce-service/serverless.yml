@@ -14,14 +14,17 @@ provider:
   environment:
     AFFIRMATION_TABLE_NAME: ${self:custom.AffirmationTable.name}
     MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
-    JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
+    AFFIRMATION_BUCKET_NAME: ${self:custom.AffirmationBucket.name}
+    # JWT_SECRET: ${self:custom.secrets.JWT_SECRET}
   iamRoleStatements:
     - ${file(iam/AffirmationTableIAM.yml):AffirmationTableIAM}
     - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
+    - ${file(iam/AffirmationBucketIAM.yml):AffirmationBucketIAM}
 
 resources:
   Resources:
     AffirmationTable: ${file(resources/AffirmationTable.yml):AffirmationTable}
+    AffirmationBucket: ${file(resources/AffirmationBucket.yml):AffirmationBucket}
 
 functions:
 #  PRODUCTS 
@@ -156,6 +159,8 @@ custom:
   MailQueue:
     arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
     url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
+  AffirmationBucket:
+    name: affirmation-bucket-amcintosh-${self:provider.stage} 
   bundle:
     linting: false
   secrets: ${file(secrets.json)}
