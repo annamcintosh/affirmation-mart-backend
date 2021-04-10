@@ -9,7 +9,7 @@ import { updateShoppingOrderWithId } from "./updateShoppingOrder";
 import { processOrderEmails } from "./processOrderEmails";
 import { processConfirmationEmails } from "./processConfirmationEmails";
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 async function placeOrder(event, context) {
   const { id } = event.pathParameters;
@@ -50,7 +50,7 @@ async function placeOrder(event, context) {
     const newOrder = await createOrderWithId(userId);
     const newOrderId = newOrder.id;
     updateUserOrder = await updateShoppingOrderWithId(newOrderId, userId);
-    const completedEmail = await processOrderEmails(userId, order);
+    // const completedEmail = await processOrderEmails(userId, order);
     const newOrderStatusFulfilled = await updateOrderStatusById(
       newStatusFulfilled,
       id

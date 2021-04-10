@@ -1,3 +1,4 @@
+import AWS from "aws-sdk";
 import { getUserById } from "./getUser";
 
 export async function processConfirmationEmails(userId, order) {
@@ -11,26 +12,32 @@ export async function processConfirmationEmails(userId, order) {
   const notifySeller = sqs
     .sendMessage({
       QueueUrl: process.env.MAIL_QUEUE_URL,
-      MessageBody: JSON.stringify({
-        subject: "New Order Placed",
+      MessageBody: {
         recipient: "affirmation.mart@gmail.com",
-        body: { order, user, currently },
+        body: { order, user },
         template: "AFFIRMATION-ORDER-SELLER-CONFIRMED",
-      }),
+      },
     })
     .promise();
 
   const orderConfirmation = sqs
     .sendMessage({
       QueueUrl: process.env.MAIL_QUEUE_URL,
-      MessageBody: JSON.stringify({
-        subject: "Affirmation-Mart Order Confirmation",
+      MessageBody: {
         recipient: userId,
         body: { order, user },
         template: "AFFIRMATION-ORDER-CONFIRMED",
-      }),
+      },
     })
     .promise();
 
-  return Promise.all([notifySeller, orderConfirmation]);
+  Promise.all([notifySeller, orderConfirmation]);
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true,
+    },
+  };
 }

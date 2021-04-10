@@ -4,7 +4,6 @@ import commonMiddleware from "../lib/commonMiddleware";
 import createError from "http-errors";
 import { getUserById } from "./getUser";
 import { createOrderWithId } from "./createOrder";
-// import { hashPass } from "../lib/bcryptService";
 import { addUser } from "./addUser";
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
