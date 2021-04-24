@@ -6,8 +6,8 @@ import { getOrderById } from "./getOrder";
 import { updateOrderStatusById } from "./updateOrderStatus";
 import { createOrderWithId } from "./createOrder";
 import { updateShoppingOrderWithId } from "./updateShoppingOrder";
-import { processOrderEmails } from "./processOrderEmails";
-import { processConfirmationEmails } from "./processConfirmationEmails";
+// import { processOrderEmails } from "./processOrderEmails";
+// import { processConfirmationEmails } from "./processConfirmationEmails";
 
 // const dynamodb = new AWS.DynamoDB.DocumentClient();
 
@@ -46,7 +46,7 @@ async function placeOrder(event, context) {
       newStatusPending,
       id
     );
-    const confirmedEmail = await processConfirmationEmails(userId, order);
+    // const confirmedEmail = await processConfirmationEmails(userId, order);
     const newOrder = await createOrderWithId(userId);
     const newOrderId = newOrder.id;
     updateUserOrder = await updateShoppingOrderWithId(newOrderId, userId);
